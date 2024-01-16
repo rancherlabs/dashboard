@@ -4,14 +4,15 @@ import EmberInputPo from '@/cypress/e2e/po/components/ember/ember-input.po';
 import ClusterManagerCreateRKE1PagePo from '@/cypress/e2e/po/edit/provisioning.cattle.io.cluster/create/cluster-create-rke1.po';
 import EmberAccordionPo from '@/cypress/e2e/po/components/ember/ember-accordion.po';
 import EmberFormMembersPo from '@/cypress/e2e/po/components/ember/ember-form-members.po';
+import EmberAgentConfigurationPo from '@/cypress/e2e/po/components/ember/ember-agent-configuration.po';
 
 /**
  * Create page for an RKE1 custom cluster
  */
 export default class ClusterManagerCreateRke1CustomPagePo extends ClusterManagerCreateRKE1PagePo {
   static url = `${ ClusterManagerCreatePagePo.url }/create?type=custom`
-  static goTo(): Cypress.Chainable<Cypress.AUTWindow> {
-    return PagePo.goTo(ClusterManagerCreateRke1CustomPagePo.url);
+  static goTo(clusterUrl?: string): Cypress.Chainable<Cypress.AUTWindow> {
+    return PagePo.goTo(clusterUrl || ClusterManagerCreateRke1CustomPagePo.url);
   }
 
   goToCustomClusterCreation(): Cypress.Chainable<Cypress.AUTWindow> {
@@ -36,5 +37,21 @@ export default class ClusterManagerCreateRke1CustomPagePo extends ClusterManager
 
   nodeCommand(): EmberAccordionPo {
     return new EmberAccordionPo('cluster-driver__role');
+  }
+
+  clusterAgentAccordion() {
+    return new EmberAccordionPo('cluster-driver__cluster-agent');
+  }
+
+  fleetAgentAccordion() {
+    return new EmberAccordionPo('cluster-driver__fleet-agent');
+  }
+
+  clusterAgentConfiguration() {
+    return new EmberAgentConfigurationPo('[data-testid="form-cluster-agent"]');
+  }
+
+  fleetAgentConfiguration() {
+    return new EmberAgentConfigurationPo('[data-testid="form-fleet-agent"]');
   }
 }

@@ -25,6 +25,8 @@ env:
   TEST_RUN_ID: ${{github.run_number}}-${{github.run_attempt}}-${{github.event.pull_request.title || github.event.head_commit.message}}
   # Build the dashboard to use in tests. When set to false it will grab `latest` from CDN (useful for running e2e tests quickly)
   BUILD_DASHBOARD: true
+  CYPRESS_coverage: true
+  CYPRESS_NUM_TESTS_KEPT_IN_MEMORY: 0
 
 jobs:
   e2e-test:
