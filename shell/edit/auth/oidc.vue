@@ -128,18 +128,24 @@ export default {
 
   methods: {
     updateEndpoints() {
+      const isKeycloak = this.model.id === 'keycloakoidc';
+
       if (!this.oidcUrls.url) {
+        this.model.issuer = '';
+        if (isKeycloak) {
+          this.model.authEndpoint = '';
+        }
+
         return;
       }
-      const isKeycloak = this.model.id === 'keycloakoidc';
 
       const url = this.oidcUrls.url.replaceAll(' ', '');
       const realmsPath = isKeycloak ? 'auth/realms' : 'realms';
 
-      this.$set(this.model, 'issuer', `${ url }/${ realmsPath }/${ this.oidcUrls.realm || '' }`);
+      this.model.issuer = `${ url }/${ realmsPath }/${ this.oidcUrls.realm || '' }`;
 
       if ( isKeycloak ) {
-        this.$set(this.model, 'authEndpoint', `${ this.model.issuer || '' }/protocol/openid-connect/auth`);
+        this.model.authEndpoint = `${ this.model.issuer || '' }/protocol/openid-connect/auth`;
       }
     },
 
