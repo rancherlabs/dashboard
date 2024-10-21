@@ -1,9 +1,10 @@
 <script lang='ts'>
 import { mapGetters, Store } from 'vuex';
+import cloneDeep from 'lodash/cloneDeep';
 import { defineComponent } from 'vue';
 
 import { randomStr } from '@shell/utils/string';
-import { _CREATE, _EDIT, _VIEW } from '@shell/config/query-params';
+import { _CREATE, _EDIT, _IMPORT, _VIEW } from '@shell/config/query-params';
 import { NORMAN } from '@shell/config/types';
 
 import { parseAzureError } from '@shell/utils/azure';
@@ -21,6 +22,7 @@ import Accordion from '@components/Accordion/Accordion.vue';
 import Banner from '@components/Banner/Banner.vue';
 import Loading from '@shell/components/Loading.vue';
 import Config from './Config.vue';
+import Import from './Import.vue';
 
 import ClusterMembershipEditor, { canViewClusterMembershipEditor } from '@shell/components/form/Members/ClusterMembershipEditor.vue';
 import type { AKSDiskType, AKSNodePool, AKSPoolMode, AKSConfig } from '../types/index';
@@ -38,6 +40,8 @@ import {
 
 } from '../util/validators';
 import { CREATOR_PRINCIPAL_ID } from '@shell/config/labels-annotations';
+
+const DEFAULT_REGION = 'eastus';
 
 export const defaultNodePool = {
   availabilityZones:     ['1', '2', '3'],
@@ -72,6 +76,13 @@ export const defaultAksConfig = {
   dnsServiceIp:       '10.0.0.10',
 };
 
+const importedDefaultAksConfig = {
+  clusterName:      '',
+  imported:         true,
+  resourceGroup:    '',
+  resourceLocation: DEFAULT_REGION,
+};
+
 const defaultCluster = {
   dockerRootDir:           '/var/lib/docker',
   enableClusterAlerting:   false,
@@ -81,8 +92,6 @@ const defaultCluster = {
   annotations:             {},
   windowsPreferedCluster:  false,
 };
-
-const DEFAULT_REGION = 'eastus';
 
 export default defineComponent({
   name: 'CruAKS',
@@ -99,7 +108,8 @@ export default defineComponent({
     Accordion,
     Banner,
     Loading,
-    Config
+    Config,
+    Import
   },
 
   mixins: [CreateEditView, FormValidation],
@@ -142,30 +152,38 @@ export default defineComponent({
         this.normanCluster.annotations[CREATOR_PRINCIPAL_ID] = this.$store.getters['auth/principalId'];
       }
     }
-    if (!this.normanCluster.aksConfig) {
-      this.normanCluster['aksConfig'] = { ...defaultAksConfig };
+
+    /**
+    * register an existing aks cluster
+    */
+    if (this.isImport) {
+      console.log('*** import cluster');
+      this.normanCluster.aksConfig = cloneDeep(importedDefaultAksConfig);
+      this.config = this.normanCluster.aksConfig;
+    } else {
+      console.log('*** create cluster');
+      /**
+      * initialize a new cluster
+      */
+      if (!this.normanCluster.aksConfig) {
+        this.normanCluster['aksConfig'] = { ...defaultAksConfig };
+      }
+      if (!this.normanCluster.aksConfig.nodePools) {
+        this.normanCluster.aksConfig['nodePools'] = [{ ...defaultNodePool }];
+      }
+      this.config = this.normanCluster.aksConfig;
+      this.nodePools = this.normanCluster.aksConfig.nodePools;
+      this.setAuthorizedIPRanges = !!(this.config?.authorizedIpRanges || []).length;
+      this.nodePools.forEach((pool: AKSNodePool) => {
+        pool['_id'] = randomStr();
+        pool['_isNewOrUnprovisioned'] = this.isNewOrUnprovisioned;
+        pool['_validation'] = {};
+      });
     }
-    if (!this.normanCluster.aksConfig.nodePools) {
-      this.normanCluster.aksConfig['nodePools'] = [{ ...defaultNodePool }];
-    }
-    this.config = this.normanCluster.aksConfig;
-    this.nodePools = this.normanCluster.aksConfig.nodePools;
-    this.setAuthorizedIPRanges = !!(this.config?.authorizedIpRanges || []).length;
-    this.nodePools.forEach((pool: AKSNodePool) => {
-      pool['_id'] = randomStr();
-      pool['_isNewOrUnprovisioned'] = this.isNewOrUnprovisioned;
-      pool['_validation'] = {};
-    });
   },
 
   data() {
-    const store = this.$store as Store<any>;
-
-    const t = store.getters['i18n/t'];
-
     return {
-      // TODO nb
-      isImport:         false,
       normanCluster:    { name: '' } as any,
       nodePools:        [] as AKSNodePool[],
       config:           { } as AKSConfig,
@@ -177,12 +195,15 @@ export default defineComponent({
       loadingLocations:       false,
       configUnreportedErrors: [],
       configIsValid:          true,
-      // TODO nb
-      // fvFormRuleSets:         [{
-      //   path:  'name',
-      //   rules: ['nameRequired', 'clusterNameChars', 'clusterNameStartEnd', 'clusterNameLength'],
-      // },
-      // ],
+      fvFormRuleSets:         [{
+        path:  'name',
+        rules: ['nameRequired', 'clusterNameChars', 'clusterNameStartEnd', 'clusterNameLength'],
+      },
+      {
+        path:  'clusterName',
+        rules: ['importedName']
+      }
+      ],
     };
   },
 
@@ -203,13 +224,15 @@ export default defineComponent({
      *  */
 
     fvExtraRules() {
-      return {
-        nameRequired:        requiredInCluster(this, 'nameNsDescription.name.label', 'name'),
+      const rules = {
+        nameRequired:        requiredInCluster(this, 'nameNsDescription.name.label', 'normanCluster.name'),
         clusterNameChars:    clusterNameChars(this),
         clusterNameStartEnd: clusterNameStartEnd(this),
         clusterNameLength:   clusterNameLength(this),
-
+        importedName:        requiredInCluster(this, 'aks.clusterToRegister', 'config.clusterName'),
       };
+
+      return rules;
     },
 
     // upstreamSpec will be null if the user created a cluster with some invalid options such that it ultimately fails to create anything in aks
@@ -220,6 +243,10 @@ export default defineComponent({
 
     isEdit() {
       return this.mode === _CREATE || this.mode === _EDIT;
+    },
+
+    isImport() {
+      return this.$route?.query?.mode === _IMPORT;
     },
 
     doneRoute() {
@@ -289,6 +316,7 @@ export default defineComponent({
           }
         });
         this.locationOptions = [{ displayName: this.t('aks.location.withAZ'), kind: 'group' }, ...withAZ, { displayName: this.t('aks.location.withoutAZ'), kind: 'group' }, ...withoutAZ];
+        // TODO nb
         if (!this.config?.resourceLocation) {
           if (res.find((r: any) => r.name === DEFAULT_REGION)) {
             this.config['resourceLocation'] = DEFAULT_REGION;
@@ -308,7 +336,10 @@ export default defineComponent({
 
     setClusterName(name: string): void {
       this.normanCluster['name'] = name;
-      this.config['clusterName'] = name;
+      // TODO nb import...?
+      if (!this.isImport) {
+        this.config['clusterName'] = name;
+      }
     },
 
     onMembershipUpdate(update: any): void {
@@ -361,6 +392,7 @@ export default defineComponent({
     :done-route="doneRoute"
     :errors="[...fvUnreportedValidationErrors, ...configUnreportedErrors]"
     :validation-passed="fvFormIsValid && ( configIsValid || isImport)"
+    :finish-button-mode="isImport ? 'import' : 'create'"
     @error="e=>errors=e"
     @finish="save"
   >
@@ -380,7 +412,10 @@ export default defineComponent({
       data-testid="cruaks-form"
     >
       <div class="row mb-10">
-        <div class="col span-4">
+        <div
+          class="col "
+          :class="{'span-6': isImport, 'span-4': !isImport}"
+        >
           <LabeledInput
             :value="normanCluster.name"
             :mode="mode"
@@ -390,7 +425,10 @@ export default defineComponent({
             @update:value="setClusterName"
           />
         </div>
-        <div class="col span-4">
+        <div
+          class="col"
+          :class="{'span-6': isImport, 'span-4': !isImport}"
+        >
           <LabeledInput
             v-model:value="normanCluster.description"
             :mode="mode"
@@ -399,6 +437,7 @@ export default defineComponent({
           />
         </div>
         <div
+          v-if="!isImport"
           class="col span-4"
         >
           <LabeledSelect
@@ -416,14 +455,23 @@ export default defineComponent({
           />
         </div>
       </div>
-
+      <Import
+        v-if="isImport"
+        v-model:cluster-name="config.clusterName"
+        v-model:resource-group="config.resourceGroup"
+        v-model:resource-location="config.resourceLocation"
+        v-model:enable-network-policy="normanCluster.enableNetworkPolicy"
+        :rules="fvGetAndReportPathRules('clusterName')"
+        :azure-credential-secret="config.azureCredentialSecret"
+        :mode="mode"
+      />
       <Config
+        v-if="!isImport"
         v-model:config="config"
         v-model:config-unreported-errors="configUnreportedErrors"
-        v-model:enable-network-policy="value.enableNetworkPolicy"
+        v-model:enable-network-policy="normanCluster.enableNetworkPolicy"
         v-model:config-is-valid="configIsValid"
         :value="value"
-
         :mode="mode"
         :original-version="originalVersion"
         :is-new-or-unprovisioned="isNewOrUnprovisioned"
