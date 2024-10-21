@@ -4,7 +4,7 @@ import { defineComponent } from 'vue';
 
 import { randomStr } from '@shell/utils/string';
 import { _CREATE, _EDIT, _VIEW } from '@shell/config/query-params';
-import { NORMAN, MANAGEMENT } from '@shell/config/types';
+import { NORMAN } from '@shell/config/types';
 
 import { parseAzureError } from '@shell/utils/azure';
 
@@ -58,7 +58,7 @@ export const defaultNodePool = {
   _validation:           {}
 };
 
-const defaultAksConfig = {
+export const defaultAksConfig = {
   clusterName:        '',
   imported:           false,
   linuxAdminUsername: 'azureuser',
@@ -83,8 +83,6 @@ const defaultCluster = {
 };
 
 const DEFAULT_REGION = 'eastus';
-
-const _NONE = 'none';
 
 export default defineComponent({
   name: 'CruAKS',
@@ -177,9 +175,9 @@ export default defineComponent({
       locationOptions: [] as string[],
 
       loadingLocations:       false,
-      // TODO nb computed prop with fvUnreportedValidationErrors
       configUnreportedErrors: [],
       configIsValid:          true,
+      // TODO nb
       // fvFormRuleSets:         [{
       //   path:  'name',
       //   rules: ['nameRequired', 'clusterNameChars', 'clusterNameStartEnd', 'clusterNameLength'],
