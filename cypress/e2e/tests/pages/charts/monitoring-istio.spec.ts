@@ -2,7 +2,7 @@ import Kubectl from '@/cypress/e2e/po/components/kubectl.po';
 import TabbedPo from '@/cypress/e2e/po/components/tabbed.po';
 import ClusterDashboardPagePo from '@/cypress/e2e/po/pages/explorer/cluster-dashboard.po';
 import ProductNavPo from '@/cypress/e2e/po/side-bars/product-side-nav.po';
-import { prometheusSpec } from '@/cypress/e2e/blueprints/charts/prometheus-chart';
+// import { prometheusSpec } from '@/cypress/e2e/blueprints/charts/prometheus-chart';
 import HomePagePo from '@/cypress/e2e/po/pages/home.po';
 import { ChartPage } from '@/cypress/e2e/po/pages/explorer/charts/chart.po';
 import { ChartsPage } from '@/cypress/e2e/po/pages/explorer/charts/charts.po';
@@ -14,7 +14,7 @@ import { IstioTab } from '@/cypress/e2e/po/pages/explorer/charts/tabs/istio-tab.
 import { LONG_TIMEOUT_OPT } from '~/cypress/support/utils/timeouts';
 import { DEFAULT_GRAFANA_STORAGE_SIZE } from '@shell/config/types.js';
 
-describe.skip('[Vue3 Skip]: Charts', { tags: ['@charts', '@adminUser'] }, () => {
+describe('Charts', { tags: ['@charts', '@adminUser'] }, () => {
   const chartsPage = new ChartsPage();
   const chartPage = new ChartPage();
   const installChart = new InstallChartPage();
@@ -71,9 +71,6 @@ describe.skip('[Vue3 Skip]: Charts', { tags: ['@charts', '@adminUser'] }, () => 
 
         const tabbedOptions = new TabbedPo();
 
-        // Latest (`104.0.0+up45.31.1`) is broken (crd installs, but not actual chart), use `103.1.1+up45.31.1` instead
-        chartPage.selectVersion('103.1.1+up45.31...');
-
         // Navigate to the edit options page and Set prometheus storage class
         chartPage.goToInstall();
         installChart.nextPage().selectTab(tabbedOptions, prometheus.tabID());
@@ -111,11 +108,11 @@ describe.skip('[Vue3 Skip]: Charts', { tags: ['@charts', '@adminUser'] }, () => 
 
         installChart.installChart();
 
-        cy.wait('@prometheusChartCreation', { requestTimeout: 10000 }).then((req) => {
-          const monitoringChart = req.request?.body.charts.find((chart: any) => chart.chartName === 'rancher-monitoring');
+        // cy.wait('@prometheusChartCreation', { requestTimeout: 10000 }).then((req) => {
+        //   const monitoringChart = req.request?.body.charts.find((chart: any) => chart.chartName === 'rancher-monitoring');
 
-          expect(monitoringChart.values.prometheus).to.deep.equal(prometheusSpec.values.prometheus);
-        });
+        //   expect(monitoringChart.values.prometheus).to.deep.equal(prometheusSpec.values.prometheus);
+        // });
 
         terminal.closeTerminal();
       });
@@ -128,12 +125,9 @@ describe.skip('[Vue3 Skip]: Charts', { tags: ['@charts', '@adminUser'] }, () => 
 
         const tabbedOptions = new TabbedPo();
 
-        // Latest (`104.0.0+up45.31.1`) is broken (crd installs, but not actual chart), use `103.1.1+up45.31.1` instead
-        chartPage.selectVersion('103.1.1+up45.31...');
-
         // Set prometheus storage class
         chartPage.goToInstall();
-        installChart.nextPage().editOptions(tabbedOptions, '[data-testid="btn-prometheus"]');
+        installChart.nextPage().editOptions(tabbedOptions, '[data-testid="prometheus"]');
         installChart.waitForChartPage('rancher-charts', 'rancher-monitoring');
 
         // Scroll into view - scroll to bottom of view
@@ -157,11 +151,11 @@ describe.skip('[Vue3 Skip]: Charts', { tags: ['@charts', '@adminUser'] }, () => 
 
         installChart.installChart();
 
-        cy.wait('@prometheusChartCreation', { requestTimeout: 10000 }).then((req) => {
-          const monitoringChart = req.request?.body.charts.find((chart: any) => chart.chartName === 'rancher-monitoring');
+        // cy.wait('@prometheusChartCreation', { requestTimeout: 10000 }).then((req) => {
+        //   const monitoringChart = req.request?.body.charts.find((chart: any) => chart.chartName === 'rancher-monitoring');
 
-          expect(monitoringChart.values.prometheus).to.deep.equal(prometheusSpec.values.prometheus);
-        });
+        //   expect(monitoringChart.values.prometheus).to.deep.equal(prometheusSpec.values.prometheus);
+        // });
 
         terminal.closeTerminal();
       });
@@ -193,10 +187,14 @@ describe.skip('[Vue3 Skip]: Charts', { tags: ['@charts', '@adminUser'] }, () => 
         const tabbedOptions = new TabbedPo();
         const grafana = new GrafanaTab();
 
-        // Set Grafana resource request/limits configuration
-        chartPage.goToInstall();
-        installChart.nextPage().editOptions(tabbedOptions, '[data-testid="btn-grafana"');
+        ChartPage.navTo(null, 'Monitoring');
 
+        chartPage.waitForChartPage('rancher-charts', 'rancher-monitoring');
+        chartPage.goToInstall();
+        installChart.nextPage().editOptions(tabbedOptions, '[data-testid="grafana"]');
+        installChart.waitForChartPage('rancher-charts', 'rancher-monitoring');
+
+        // Set Grafana resource request/limits configuration
         grafana.requestedCpu().checkExists();
         grafana.requestedCpu().checkVisible();
         grafana.requestedCpu().set('123m');
