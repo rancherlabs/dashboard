@@ -20,10 +20,7 @@ import { Banner } from '@components/Banner';
 import Labels from '@shell/components/form/Labels';
 import HarvesterServiceAddOnConfig from '@shell/components/HarvesterServiceAddOnConfig';
 import { clone } from '@shell/utils/object';
-import {
-  POD, CAPI, HCI, COUNT, NAMESPACE, SERVICE
-} from '@shell/config/types';
-import { matching } from '@shell/utils/selector';
+import { POD, CAPI, HCI, COUNT } from '@shell/config/types';
 import { HARVESTER_NAME as HARVESTER } from '@shell/config/features';
 import { allHash } from '@shell/utils/promise';
 import { isHarvesterSatisfiesVersion } from '@shell/utils/cluster';
@@ -292,7 +289,7 @@ export default {
           harvesterConfigs: this.$store.dispatch(`management/findAll`, { type: HCI.HARVESTER_CONFIG }),
         };
 
-        const res = await allHash(hash);
+        await allHash(hash);
 
         // this.allPods = res.pods;
         this.updateMatchingPods();

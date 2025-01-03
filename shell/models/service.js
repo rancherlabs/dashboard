@@ -1,7 +1,6 @@
 import find from 'lodash/find';
 import { POD } from '@shell/config/types';
 import SteveModel from '@shell/plugins/steve/steve-class';
-import { parse } from '@shell/utils/selector';
 import { FilterArgs } from '@shell/types/store/pagination.types';
 import { isEmpty } from 'lodash';
 
@@ -153,11 +152,11 @@ export default class Service extends SteveModel {
     // }
 
     if (isEmpty(selector)) {
-      return;
+      return undefined;
     }
 
-    return { matchLabels: selector // TODO: RC confirm this is alll is ever is??? can it be string | exp[] | ??
-    };
+    // TODO: RC confirm this is alll is ever is??? can it be string | exp[] | ??
+    return { matchLabels: selector };
   }
 
   async fetchPods(podSelector = this.podSelector) {
@@ -184,7 +183,7 @@ export default class Service extends SteveModel {
   // }
 
   get pods() {
-    console.warn('Anything using this must be updated to ????!!!');
+    // console.warn('Anything using this must be updated to ????!!!');
 
     return [];
   }

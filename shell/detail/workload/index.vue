@@ -14,9 +14,8 @@ import DashboardMetrics from '@shell/components/DashboardMetrics';
 import { mapGetters } from 'vuex';
 import { allDashboardsExist } from '@shell/utils/grafana';
 import PlusMinus from '@shell/components/form/PlusMinus';
-import { matches } from '@shell/utils/selector';
 import { PROJECT } from '@shell/config/labels-annotations';
-import { FilterArgs } from '@shell/types/store/pagination.types';
+// import { FilterArgs } from '@shell/types/store/pagination.types';
 
 const SCALABLE_TYPES = Object.values(SCALABLE_WORKLOAD_TYPES);
 const WORKLOAD_METRICS_DETAIL_URL = '/api/v1/namespaces/cattle-monitoring-system/services/http:rancher-monitoring-grafana:80/proxy/d/rancher-workload-pods-1/rancher-workload-pods?orgId=1';
@@ -57,7 +56,6 @@ export default {
       allNodes:     hasNodes ? this.$store.dispatch('cluster/findAll', { type: NODE }) : []
     };
 
-    debugger;
     if (this.podSchema) {
       hash.matchingPods = this.value.fetchPods();
     }
@@ -280,6 +278,7 @@ export default {
     async scaleUp() {
       await this.scale(true);
     },
+    // TODO: RC tidy
     // findMatchingServices() {
     //   if (!this.serviceSchema) {
     //     return [];

@@ -566,7 +566,7 @@ export default class Workload extends WorkloadService {
   }
 
   get pods() {
-    console.warn('Anything using this must be updated to ????!!!');
+    // console.warn('Anything using this must be updated to ????!!!');
 
     return [];
   }
