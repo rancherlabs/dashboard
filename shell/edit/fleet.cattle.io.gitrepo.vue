@@ -86,9 +86,7 @@ export default {
 
     this.tlsMode = tls;
 
-    if (this.value.spec.correctDrift === undefined) {
-      this.value.spec['correctDrift'] = { enabled: false };
-    }
+    this.correctDriftEnabled = this.value.spec?.correctDrift?.enabled || false;
 
     this.updateTargets();
   },
@@ -145,6 +143,7 @@ export default {
       privateKey:              null,
       tlsMode:                 null,
       caBundle:                null,
+      correctDriftEnabled:     false,
       targetAdvancedErrors:    null,
       matchingClusters:        null,
       ref,
@@ -492,6 +491,12 @@ export default {
         }
       }
     },
+
+    onSave() {
+      this.value.spec['correctDrift'] = { enabled: this.correctDriftEnabled };
+
+      this.save();
+    }
   }
 };
 </script>
@@ -513,7 +518,7 @@ export default {
     class="wizard"
     @cancel="done"
     @error="e=>errors = e"
-    @finish="save"
+    @finish="onSave"
   >
     <template #noticeBanner>
       <Banner
@@ -648,12 +653,13 @@ export default {
       <h2 v-t="'fleet.gitRepo.resources.label'" />
       <div>
         <Checkbox
-          v-model:value="value.spec.correctDrift.enabled"
+          v-model:value="correctDriftEnabled"
           data-testid="GitRepo-correctDrift-checkbox"
           class="check"
           type="checkbox"
           label-key="fleet.gitRepo.resources.correctDrift"
           :mode="mode"
+          @update:value="correctDriftEnabled=$event"
         />
         <Banner
           data-testid="GitRepo-correctDrift-banner"
