@@ -889,6 +889,7 @@ export default {
 
     .rd-header-right {
       display: flex;
+      align-items: center;
       flex-direction: row;
       padding: 0;
 
@@ -1008,10 +1009,6 @@ export default {
       .header-spacer {
         background-color: var(--header-bg);
         position: relative;
-      }
-
-      .user.user-menu {
-        padding-top: 9.5px;
       }
 
       > .user {
