@@ -13,9 +13,9 @@ interface SharedSettings {
    */
   labelSelectOptions?: { [key: string]: any },
   /**
-   * Map the resources shown in LabelSelect
+   * Map, filter, tweak, etc the resources to show in the LabelSelect
    */
-  mapResult?: (resources: any[]) => any[]
+  updateResources?: (resources: any[]) => any[]
 }
 
 /**
@@ -23,7 +23,7 @@ interface SharedSettings {
  */
 export interface ResourceLabeledSelectPaginateSettings extends SharedSettings {
   /**
-   * Override the convience function which fetches a page of results
+   * Override the convenience function which fetches a page of results
    */
   overrideRequest?: LabelSelectPaginateFn,
   /**
@@ -65,6 +65,8 @@ export default defineComponent({
   name: 'ResourceLabeledSelect',
 
   components: { LabeledSelect },
+
+  emits: ['update:value'],
 
   props: {
     /**
@@ -120,6 +122,7 @@ export default defineComponent({
     }
 
     if (!this.paginate) {
+      // The resource won't be paginated and component expects everything up front
       await this.$store.dispatch(`${ this.inStore }/findAll`, { type: this.resourceType });
     }
   },
@@ -148,13 +151,14 @@ export default defineComponent({
 
       const all = this.$store.getters[`${ this.inStore }/all`](this.resourceType);
 
-      return this.allResourcesSettings?.mapResult ? this.allResourcesSettings.mapResult(all) : all;
+      return this.allResourcesSettings?.updateResources ? this.allResourcesSettings.updateResources(all) : all;
     }
   },
 
   methods: {
     /**
-     * Typeof LabelSelectPaginateFn
+     * Make the request to fetch the resource given the state of the label select (filter, page, page size, etc see LabelSelectPaginateFn)
+     * opts: Typeof LabelSelectPaginateFn
      */
     async paginateType(opts: LabelSelectPaginateFnOptions): Promise<LabelSelectPaginateFnResponse> {
       if (this.paginatedResourceSettings?.overrideRequest) {
@@ -175,9 +179,9 @@ export default defineComponent({
       const options = this.paginatedResourceSettings?.requestSettings ? this.paginatedResourceSettings.requestSettings(defaultOptions) : defaultOptions;
       const res = await labelSelectPaginationFunction(options);
 
-      return this.paginatedResourceSettings?.mapResult ? {
+      return this.paginatedResourceSettings?.updateResources ? {
         ...res,
-        page: this.paginatedResourceSettings.mapResult(res.page)
+        page: this.paginatedResourceSettings.updateResources(res.page)
       } : res;
     },
   },
@@ -190,5 +194,6 @@ export default defineComponent({
     :loading="$fetchState.pending"
     :options="allOfType"
     :paginate="paginateType"
+    @update:value="$emit('update:value', $event)"
   />
 </template>
