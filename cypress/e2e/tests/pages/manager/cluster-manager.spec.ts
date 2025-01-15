@@ -39,6 +39,7 @@ const clusterNamePartial = `${ runPrefix }-create`;
 const rke1CustomName = `${ clusterNamePartial }-rke1-custom`;
 const rke2CustomName = `${ clusterNamePartial }-rke2-custom`;
 const importGenericName = `${ clusterNamePartial }-import-generic`;
+let reenableAKS = false;
 
 const downloadsFolder = Cypress.config('downloadsFolder');
 
@@ -100,7 +101,9 @@ describe('Cluster Manager', { testIsolation: 'off', tags: ['@manager', '@adminUs
     driversPage.list().actionMenu('Azure AKS').getMenuItem('Deactivate').click();
     const deactivateDialog = new DeactivateDriverDialogPo();
 
-    deactivateDialog.deactivate();
+    deactivateDialog.deactivate().then(() => {
+      reenableAKS = true;
+    });
 
     // verify that the AKS card is not shown
     clusterList.goTo();
@@ -827,5 +830,11 @@ describe('Cluster Manager', { testIsolation: 'off', tags: ['@manager', '@adminUs
         clusterCreate.credentialsBanner().checkNotExists();
       });
     });
+  });
+
+  after(() => {
+    if (reenableAKS) {
+      cy.createRancherResource('v3', 'kontainerDrivers/azurekubernetesservice?action=activate', {});
+    }
   });
 });
