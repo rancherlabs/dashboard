@@ -393,6 +393,7 @@ export default {
     <div>
       <TopLevelMenu v-if="isRancherInHarvester || isMultiCluster || !isSingleProduct" />
     </div>
+
     <div
       class="menu-spacer"
       :class="{'isSingleProduct': isSingleProduct }"
@@ -400,20 +401,25 @@ export default {
       <router-link
         v-if="isSingleProduct && !isRancherInHarvester"
         :to="singleProductLogoRoute"
+        role="link"
+        :alt="t('branding.logos.home')"
       >
         <BrandImage
           v-if="isSingleProduct.supportCustomLogo && isHarvester"
           class="side-menu-logo"
           file-name="harvester.svg"
           :support-custom-logo="true"
+          :alt="t('branding.logos.label')"
         />
         <img
           v-else
           class="side-menu-logo"
           :src="isSingleProduct.logo"
+          :alt="t('branding.logos.label')"
         >
       </router-link>
     </div>
+
     <div
       v-if="!simple"
       ref="product"
@@ -440,6 +446,7 @@ export default {
             v-if="currentCluster"
             :cluster="currentCluster"
             class="mr-10"
+            :alt="t('branding.logos.label')"
           />
           <div
             v-if="currentCluster"
@@ -452,6 +459,7 @@ export default {
             v-if="currentCluster"
             :cluster="currentCluster"
             class="ml-10"
+            :alt="t('branding.logos.label')"
           />
           <div
             v-if="!currentCluster"
@@ -460,6 +468,7 @@ export default {
             <BrandImage
               class="side-menu-logo-img"
               file-name="rancher-logo.svg"
+              :alt="t('branding.logos.label')"
             />
           </div>
         </template>
@@ -474,12 +483,14 @@ export default {
           :src="currentProduct.iconHeader"
           class="cluster-os-logo mr-10"
           style="width: 44px; height: 36px;"
+          :alt="t('branding.logos.label')"
         >
         <div class="product-name">
           {{ prod }}
         </div>
       </div>
     </div>
+
     <div
       v-else
       class="simple-title"
@@ -499,6 +510,7 @@ export default {
           class="side-menu-logo-img"
           data-testid="header-side-menu__brand-img"
           file-name="rancher-logo.svg"
+          :alt="t('branding.logos.label')"
         />
       </div>
     </div>
@@ -526,7 +538,11 @@ export default {
             type="button"
             class="btn header-btn role-tertiary"
             data-testid="header-action-import-yaml"
+            role="button"
+            tabindex="0"
+            :aria-label="t('nav.import')"
             @click="openImport()"
+            @keyup.space="openImport()"
           >
             <i class="icon icon-upload icon-lg" />
           </button>
@@ -553,8 +569,13 @@ export default {
             :disabled="!shellEnabled"
             type="button"
             class="btn header-btn role-tertiary"
+            role="button"
+            tabindex="0"
+            :aria-label="t('nav.shellShortcut', {key:''})"
             @shortkey="currentCluster.openShell()"
             @click="currentCluster.openShell()"
+            @keyup.enter="currentCluster.openShell()"
+            @keyup.space="currentCluster.openShell()"
           >
             <i class="icon icon-terminal icon-lg" />
           </button>
@@ -566,7 +587,12 @@ export default {
             type="button"
             class="btn header-btn role-tertiary"
             data-testid="btn-download-kubeconfig"
+            role="button"
+            tabindex="0"
+            :aria-label="t('nav.kubeconfig.download')"
             @click="currentCluster.downloadKubeConfig()"
+            @keyup.enter="currentCluster.downloadKubeConfig()"
+            @keyup.space="currentCluster.downloadKubeConfig()"
           >
             <i class="icon icon-file icon-lg" />
           </button>
@@ -578,7 +604,12 @@ export default {
             type="button"
             class="btn header-btn role-tertiary"
             data-testid="btn-copy-kubeconfig"
+            role="button"
+            tabindex="0"
+            :aria-label="t('nav.kubeconfig.copy')"
             @click="copyKubeConfig($event)"
+            @keyup.enter="copyKubeConfig($event)"
+            @keyup.space="copyKubeConfig($event)"
           >
             <i
               v-if="kubeConfigCopying"
@@ -598,8 +629,13 @@ export default {
           type="button"
           class="btn header-btn role-tertiary"
           data-testid="header-resource-search"
+          role="button"
+          tabindex="0"
+          :aria-label="t('nav.resourceSearch.toolTip', {key: ''})"
           @shortkey="openSearch()"
           @click="openSearch()"
+          @keyup.enter="openSearch()"
+          @keyup.space="openSearch()"
         >
           <i class="icon icon-search icon-lg" />
         </button>
@@ -629,8 +665,13 @@ export default {
           type="button"
           class="btn header-btn role-tertiary"
           :data-testid="`extension-header-action-${ action.labelKey || action.label }`"
+          role="button"
+          tabindex="0"
+          :aria-label="action.label"
           @shortkey="handleExtensionAction(action, $event)"
           @click="handleExtensionAction(action, $event)"
+          @keyup.enter="handleExtensionAction(action, $event)"
+          @keyup.space="handleExtensionAction(action, $event)"
         >
           <IconOrSvg
             class="icon icon-lg"
@@ -649,9 +690,12 @@ export default {
         class="user user-menu"
         data-testid="nav_header_showUserMenu"
         tabindex="0"
-        @blur="showMenu(false)"
+        role="menu"
+        :aria-label="t('generic.userMenu')"
         @click="showMenu(true)"
-        @focus.capture="showMenu(true)"
+        @blur.capture="showMenu(false)"
+        @keyup.enter="showMenu(true)"
+        @keyup.space="showMenu(true)"
       >
         <v-dropdown
           :triggers="[]"
@@ -660,6 +704,7 @@ export default {
           :flip="false"
           :container="false"
           :placement="'bottom-end'"
+          @focus.capture="showMenu(true)"
         >
           <div class="user-image text-right hand">
             <img
@@ -668,6 +713,7 @@ export default {
               :class="{'avatar-round': principal.roundAvatar}"
               width="36"
               height="36"
+              :alt="t('generic.userAvatar')"
             >
             <i
               v-else
@@ -701,6 +747,9 @@ export default {
                   v-slot="{ href, navigate }"
                   custom
                   :to="{name: 'prefs'}"
+                  role="link"
+                  aria-label="preferences page"
+                  @keyup.space="$router.push({name: 'prefs'})"
                 >
                   <li
                     class="user-menu-item"
@@ -715,6 +764,9 @@ export default {
                   v-slot="{ href, navigate }"
                   custom
                   :to="{name: 'account'}"
+                  role="link"
+                  aria-label="account page"
+                  @keyup.space="$router.push({name: 'account'})"
                 >
                   <li
                     class="user-menu-item"
@@ -730,6 +782,7 @@ export default {
                   class="user-menu-item no-link"
                   @click="showSloModal"
                   @keypress.enter="showSloModal"
+                  @keyup.space="showSloModal"
                 >
                   <span>{{ t('nav.userMenu.logOut') }}</span>
                 </li>
@@ -739,6 +792,9 @@ export default {
                   v-slot="{ href, navigate }"
                   custom
                   :to="generateLogoutRoute"
+                  role="link"
+                  aria-label="logout"
+                  @keyup.space="$router.push(generateLogoutRoute)"
                 >
                   <li
                     class="user-menu-item"
@@ -1012,6 +1068,10 @@ export default {
 
       .user.user-menu {
         padding-top: 9.5px;
+
+        &:focus-visible .user-image {
+          @include focus-outline;
+        }
       }
 
       > .user {
