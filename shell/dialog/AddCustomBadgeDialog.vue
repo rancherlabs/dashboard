@@ -213,6 +213,7 @@ export default {
   <Card
     class="prompt-badge"
     :show-highlight-border="false"
+    :trigger-focus-trap="true"
   >
     <template #title>
       <h4 class="text-default-text">
@@ -258,7 +259,6 @@ export default {
             <Checkbox
               v-model:value="badgeAsIcon"
               :label="t('clusterBadge.modal.badgeAsIcon')"
-
               :tooltip="t('clusterBadge.modal.maxCharsTooltip')"
             />
 
@@ -312,15 +312,23 @@ export default {
         />
         <div class="buttons">
           <button
+            role="button"
             class="btn role-secondary mr-10"
+            :aria-label="t('generic.cancel')"
             @click="close"
+            @keyup.enter="close"
+            @keyup.space="close"
           >
             {{ t('generic.cancel') }}
           </button>
           <AsyncButton
             :action-label="t('clusterBadge.modal.buttonAction')"
             :disabled="!canSubmit"
+            role="button"
+            :aria-label="t('generic.cancel')"
             @click="apply"
+            @keyup.enter="apply"
+            @keyup.space="apply"
           />
         </div>
       </div>
