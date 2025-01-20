@@ -675,19 +675,16 @@ export default {
         />
       </div>
       <div class="spacer" />
-      <h2 v-t="'fleet.gitRepo.paths.label'" />
       <ArrayList
         v-model:value="value.spec.paths"
         data-testid="gitRepo-paths"
+        :title="t('fleet.gitRepo.paths.label')"
         :mode="mode"
         :initial-empty-row="false"
         :value-placeholder="t('fleet.gitRepo.paths.placeholder')"
         :add-label="t('fleet.gitRepo.paths.addLabel')"
-      >
-        <template #empty>
-          <Banner label-key="fleet.gitRepo.paths.empty" />
-        </template>
-      </ArrayList>
+        :protip="t('fleet.gitRepo.paths.empty')"
+      />
     </template>
     <template #stepTargetInfo>
       <h2 v-t="isLocal ? 'fleet.gitRepo.target.labelLocal' : 'fleet.gitRepo.target.label'" />
