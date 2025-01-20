@@ -647,7 +647,7 @@ export default {
       <div class="resource-handling">
         <Checkbox
           v-model:value="correctDriftEnabled"
-          :tooltip="t('fleet.gitRepo.resources.correctDriftBanner')"
+          :tooltip="t('fleet.gitRepo.resources.correctDriftTooltip')"
           data-testid="GitRepo-correctDrift-checkbox"
           class="check"
           type="checkbox"
@@ -656,7 +656,7 @@ export default {
         />
         <Checkbox
           v-model:value="value.spec.keepResources"
-          :tooltip="t('fleet.gitRepo.resources.keepResourcesBanner')"
+          :tooltip="t('fleet.gitRepo.resources.keepResourcesTooltip')"
           data-testid="GitRepo-keepResources-checkbox"
           class="check"
           type="checkbox"

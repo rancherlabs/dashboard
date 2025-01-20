@@ -2156,9 +2156,9 @@ fleet:
     resources:
       label: '资源处理'
       keepResources: 永远保留资源
-      keepResourcesBanner: 启用时，删除 GitRepo 或 Bundle 后将保留资源，只会删除 Helm Release Secret。
+      keepResourcesTooltip: 启用时，删除 GitRepo 或 Bundle 后将保留资源，只会删除 Helm Release Secret。
       correctDrift: 启用自我修复
-      correctDriftBanner: 启用后，Fleet 将确保集群资源与 Git 仓库保持同步。在 ecluster 上进行的所有资源更改都将丢失。
+      correctDriftTooltip: 启用后，Fleet 将确保集群资源与 Git 仓库保持同步。在 ecluster 上进行的所有资源更改都将丢失。
     add:
       steps:
         repoInfo:
