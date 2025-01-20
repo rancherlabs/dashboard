@@ -540,17 +540,7 @@ export default {
         @update:value="$emit('input', $event)"
       />
 
-      <div class="row">
-        <div class="col span-6">
-          <Banner
-            color="info col span-6"
-          >
-            <div>
-              {{ t('fleet.gitRepo.repo.protocolBanner') }}
-            </div>
-          </Banner>
-        </div>
-      </div>
+      <h2 v-t="'fleet.gitRepo.repo.title'" />
       <div
         class="row"
         :class="{'mt-20': isView}"
