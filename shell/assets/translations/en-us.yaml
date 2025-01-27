@@ -2430,7 +2430,7 @@ fleet:
     repo:
       title: Source
       label: Repository URL
-      placeholder: e.g. https://github.com/rancher/fleet-examples.git or git@github.com:rancher/fleet-examples.git
+      placeholder: Enter a valid HTTPS or SSH URL to a git repository
       addRepo: Add Repository
       noRepos: No repositories have been added
       noWorkspaces: There are no workspaces. <br/> Please create a workspace before adding repositories
