@@ -145,7 +145,7 @@ export default {
     }
   },
 
-  unmounted() {
+  beforeDestroy() {
     if ( this.useHash ) {
       window.removeEventListener('hashchange', this.hashChange);
     }
