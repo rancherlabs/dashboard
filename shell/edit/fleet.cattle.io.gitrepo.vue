@@ -545,17 +545,8 @@ export default {
         @update:value="$emit('input', $event)"
       />
 
-      <div class="row">
-        <div class="col span-6">
-          <Banner
-            color="info col span-6"
-          >
-            <div>
-              {{ t('fleet.gitRepo.repo.protocolBanner') }}
-            </div>
-          </Banner>
-        </div>
-      </div>
+      <h2 v-t="'fleet.gitRepo.repo.title'" />
+
       <div
         class="row"
         :class="{'mt-20': isView}"
@@ -585,6 +576,10 @@ export default {
           />
         </div>
       </div>
+
+      <div class="spacer" />
+      <h2 v-t="'fleet.gitRepo.auth.title'" />
+
       <SelectOrCreateAuthSecret
         :value="value.spec.clientSecretName"
         :register-before-hook="registerBeforeHook"
@@ -632,8 +627,7 @@ export default {
       </div>
 
       <template v-if="isTls">
-        <div class="spacer" />
-        <div class="row">
+        <div class="row mt-20">
           <div class="col span-6">
             <LabeledSelect
               :label="t('fleet.gitRepo.tls.label')"
@@ -770,6 +764,11 @@ export default {
 </template>
 
 <style lang="scss" scoped>
+  :deep() .select-or-create-auth-secret {
+    .row {
+      margin-top: 10px !important;
+    }
+  }
   .resource-handling {
     display: flex;
     flex-direction: column;
