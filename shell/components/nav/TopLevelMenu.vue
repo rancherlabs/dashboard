@@ -447,6 +447,7 @@ export default {
     },
 
     updateClusters(pinnedIds, speed = 'slow' | 'medium' | 'quick') {
+      console.warn('updateClusters', speed); // TODO: RC each time this is called with a different speed it could run concurrently with another
       const args = {
         pinnedIds,
         searchTerm:  this.search,
