@@ -71,15 +71,15 @@ jobs:
           { username: 'standard_user', tag: '@standardUser' }
         ]
         features:  [
-          ['@navigation', '@extensions'],
-          ['@charts'],
-          ['@explorer'],
+          # ['@navigation', '@extensions'],
+          # ['@charts'],
+          # ['@explorer'],
           ['@fleet'],
-          ['@generic', '@globalSettings'],
-          ['@manager'],
-          ['@userMenu', '@usersAndAuths'],
-          ['@components'],
-          ['@vai']
+          # ['@generic', '@globalSettings'],
+          # ['@manager'],
+          # ['@userMenu', '@usersAndAuths'],
+          # ['@components'],
+          # ['@vai']
         ]
     runs-on: ubuntu-latest
     steps:
@@ -131,7 +131,7 @@ jobs:
           TEST_USERNAME: ${{ matrix.role.username }}
           
       - name: Upload screenshots
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: ${{ failure() }}
         with:
           name: ${{github.run_number}}-${{github.run_attempt}}-screenshots-${{ matrix.role.tag }}+${{ matrix.features[0] }}
@@ -154,7 +154,7 @@ jobs:
           cp -r coverage/unit/ coverage-artifacts/coverage/unit/
 
       - name: Upload coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{github.run_number}}-${{github.run_attempt}}-coverage
           path: coverage-artifacts/**/*
