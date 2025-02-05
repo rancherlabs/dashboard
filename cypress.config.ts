@@ -2,6 +2,9 @@
 import { defineConfig } from 'cypress';
 import { removeDirectory } from 'cypress-delete-downloads-folder';
 import { getSpecPattern } from '@/scripts/cypress';
+import * as ws from 'ws';
+import * as https from 'https';
+
 // Required for env vars to be available in cypress
 require('dotenv').config();
 
@@ -104,6 +107,56 @@ export default defineConfig({
       require('@cypress/grep/src/plugin')(config);
       // For more info: https://www.npmjs.com/package/cypress-delete-downloads-folder
       on('task', { removeDirectory });
+      on('task', {
+        setupWebSocket(options) {
+          return new Promise((resolve, reject) => {
+            const {
+              CATTLE_TEST_URL,
+              NAMESPACE,
+              POD_NAME,
+              CONTAINER_NAME,
+              commandSend,
+              BEARER_TOKEN,
+            } = options;
+
+            const commands = ['/bin/sh', '-c', `TERM=xterm-256color; export TERM; ${ commandSend }`];
+            const url = buildExecUrl(CATTLE_TEST_URL, NAMESPACE, POD_NAME, CONTAINER_NAME, commands);
+
+            const agent = new https.Agent({ rejectUnauthorized: false });
+            const wsClient = new ws.WebSocket(url, 'base64.channel.k8s.io', {
+              headers: {
+                Authorization: `Bearer ${ BEARER_TOKEN }`,
+                Origin:        CATTLE_TEST_URL,
+                'User-Agent':  'Mozilla/5.0',
+                Connection:    'Upgrade',
+                Upgrade:       'websocket',
+              },
+              agent,
+              perMessageDeflate: false,
+            });
+
+            const messages: any[] = [];
+
+            wsClient.on('open', () => {
+              console.log('Connection success');
+            });
+
+            wsClient.on('message', (data: any) => {
+              const decoded = b64decode(data);
+
+              messages.push(decoded);
+            });
+
+            wsClient.on('close', () => {
+              resolve(messages);
+            });
+
+            wsClient.on('error', (error: any) => {
+              reject(new Error(`WebSocket error: ${ error.message }`));
+            });
+          });
+        },
+      });
 
       return config;
     },
@@ -114,3 +167,24 @@ export default defineConfig({
   videoCompression:    15,
   videoUploadOnPasses: false,
 });
+
+function b64decode(s: any) {
+  return Buffer.from(s.slice(1).toString('utf-8'), 'base64').toString('utf-8');
+}
+
+function buildExecUrl(baseUrl: string, namespace: string, podName: string, containerName: string, commands: any[]) {
+  const urlBase = `${ baseUrl }/api/v1/namespaces/${ namespace }/pods/${ podName }/exec`;
+  const params = new URLSearchParams({
+    container: containerName,
+    stdout:    '1',
+    stdin:     '1',
+    stderr:    '1',
+    tty:       '1',
+  });
+
+  commands.forEach((command: any) => {
+    params.append('command', command);
+  });
+
+  return `${ urlBase }?${ params.toString() }`;
+}
