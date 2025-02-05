@@ -69,6 +69,7 @@ declare global {
   // eslint-disable-next-line no-unused-vars
   namespace Cypress {
     interface Chainable {
+      setupWebSocket: typeof setupWebSocket;
 
       state(state: any): any;
 
